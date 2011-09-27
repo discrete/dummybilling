@@ -1,0 +1,13 @@
+<h1>Hello, World!</h1>
+
+{% for transaction in transactions %}
+<div>
+{{transaction.amount}} from {{transaction.account}}
+</div>
+{% endfor %}
+<form method="post" id="" action="">
+  account:<input type="text" name="account" value="" /><br />
+  amount: <input type="text" name="amount" value="" /><br />
+
+  <input type="submit" name="" value="Transaction" />
+</form>
