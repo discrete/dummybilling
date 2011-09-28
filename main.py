@@ -91,12 +91,25 @@ class BalanceHandler(webapp.RequestHandler):
         	balance = balance + int(transaction.amount)
         self.response.out.write(balance)
 
+class TestHandler(webapp.RequestHandler):
+    """
+    """
+    def get(self):
+        """
+        
+        Arguments:
+        - `self`:
+        """
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write("100")
+
 def main():
     app = webapp.WSGIApplication([
             ('/', MainHandler),
             ('/api/transaction', TransactionHandler),
             ('/api/bankbook', BankbookHandler),
-            ('/api/balance', BalanceHandler)
+            ('/api/balance', BalanceHandler),
+            ('/api/test', TestHandler)
             ], debug = True)
     wsgiref.handlers.CGIHandler().run(app)
 
