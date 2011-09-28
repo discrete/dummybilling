@@ -2,6 +2,7 @@ import wsgiref.handlers
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
+from django.utils import simplejson
 
 class Transaction(db.Model):
     """
@@ -9,6 +10,9 @@ class Transaction(db.Model):
     account=db.StringProperty(required = True)
     when = db.DateTimeProperty(auto_now_add=True)
     amount = db.StringProperty(required = True)
+
+    def to_dict(self):
+        return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
 
 class MainHandler(webapp.RequestHandler):
     """
@@ -67,15 +71,32 @@ class BankbookHandler(webapp.RequestHandler):
         """
         transactions = db.GqlQuery('SELECT * FROM Transaction ORDER BY when ASC')
         self.response.headers['Content-Type'] = 'text/plain'
-        for transaction in transactions:
-        	self.response.out.write(transaction.account + " balance:" + transaction.amount)
+        self.response.out.write(simplejson.dumps([transaction.to_dict() for transaction in transactions]))
 
+class BalanceHandler(webapp.RequestHandler):
+    """
+    """
+    def get(self):
+        """
+        
+        Arguments:
+        - `self`:
+        """
+        balance = 0
+        account = self.request.get('account')
+        transactions = db.GqlQuery('SELECT * FROM Transaction WHERE account = :1 ORDER BY when ASC', account)
+        #balances = db.GqlQuery('SELECT * FROM Transaction ORDER BY when ASC')
+        self.response.headers['Content-Type'] = 'text/plain'
+        for transaction in transactions:
+        	balance = balance + int(transaction.amount)
+        self.response.out.write(balance)
 
 def main():
     app = webapp.WSGIApplication([
             ('/', MainHandler),
-            ('/transaction/', TransactionHandler),
-            ('/bankbook/', BankbookHandler),
+            ('/api/transaction', TransactionHandler),
+            ('/api/bankbook', BankbookHandler),
+            ('/api/balance', BalanceHandler)
             ], debug = True)
     wsgiref.handlers.CGIHandler().run(app)
 
